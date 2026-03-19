@@ -14,8 +14,7 @@ model_path:
   licenseplate_yolo_cfg: models\yolov4-obj-license.cfg
   licenseplate_yolo_weights: models\custom_license.weights
 
-  MDE_model_path: C:\Users\DELL\OneDrive\Desktop\Scene-Distance-Estimation-Using-Monocular-Depth-Estimation\models\model-small.onnx
- 
+  MDE_model_path: models\model-small.onnx
 #Camera information.
 camera_information:
   sensor_height_mm: 9.6                                                                                                 # Camera Sensor height in mm
@@ -26,4 +25,4 @@ camera_information:
 target_object:
   #target: cup
   target: Vehicle registration plate
-  real_object_height: 160                                                                                               # Target Object physical height in mm
+  real_object_height: 95                                                                                               # Target Object physical height in mm

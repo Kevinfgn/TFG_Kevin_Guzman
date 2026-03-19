@@ -9,6 +9,7 @@ def ROIConfigurator(cam):
 
     cv2.namedWindow("ROI Size")
     width = int(cam.get(cv2.CAP_PROP_FRAME_WIDTH))
+    print(width)
     height = int(cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     initial_widthcrop = int(width*.4)                                                                                          # Declares a width value - 40% of the initial feed width.

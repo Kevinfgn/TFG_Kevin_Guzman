@@ -11,15 +11,15 @@ from modules.MonocularEstimator import MonocularEstimator
 from modules.TargetObjectLocator import FindTargetObject
 
 # Initialization of camera 
-cam = cv2.VideoCapture(0)                                                                                                      # To test webacm use "cv2.VideoCapture(0)" 0 is the default value, change whenever necessary.
+#cam = cv2.VideoCapture(0)                                                                                                      # To test webacm use "cv2.VideoCapture(0)" 0 is the default value, change whenever necessary.
 #cam = cv2.VideoCapture('/Users/espiedeguzman/Desktop/Untitled.mp4')                                                           # To test on pre recorded videos replace "0" with the file path and file.
-#cam = cv2.imread('img/test.jpeg')
+cam = cv2.imread('img/cup.jpg')                                                                                                 # To test on images replace "cv2.VideoCapture(0)" with "cv2.imread('file path and file name')".
 
 ROIConfigurator(cam)
 
 while True:
-  success, img = cam.read()                                                                                               # Use for video/camera feed.
-  #img = cam                                                                                                              # Use for image.
+  #success, img = cam.read()                                                                                               # Use for video/camera feed.
+  img = cam                                                                                                              # Use for image.
   #img = cv2.resize(img, None, fx=0.6, fy=0.6)                                                                            # Use to reszie images **Note however that this may cause inacuracy in distance estimation calulations.
   
   img_height, img_width, channels = img.shape
