@@ -23,6 +23,6 @@ camera_information:
 
 #Target Object information
 target_object:
-  #target: cup
-  target: Vehicle registration plate
-  real_object_height: 95                                                                                               # Target Object physical height in mm
+  target: cup
+  #target: Vehicle registration plate
+  real_object_height: 90                                                                                            # Target Object physical height in mm
