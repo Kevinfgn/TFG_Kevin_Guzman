@@ -74,5 +74,5 @@ mde_model.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
 mde_model.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
 # Checkpoint de éxito
-print('Yolo Initialization Successful (Target: COCO, Environment: Vehicles)')
+print('Yolo Initialization Successful')
 print('Depth Estimation Model Initialization Successful')

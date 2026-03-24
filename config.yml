@@ -15,11 +15,10 @@ model_path:
   licenseplate_yolo_weights: models\custom_license.weights
 
   MDE_model_path: models\model-small.onnx
-#Camera information.
 camera_information:
-  sensor_height_mm: 9.6                                                                                                 # Camera Sensor height in mm
-  sensor_height_px: 960                                                                                                 # Camera feed native pixel resolution height   
-  focal_length: 14   
+  sensor_height_mm: 5.75      # Altura física aproximada del sensor 1/1.67"
+  sensor_height_px: 1080      # Ajusta esto a la resolución real de tu captura
+  focal_length: 5.25          # Focal real típica para este sensor de Honor 
 
 #Target Object information
 target_object:

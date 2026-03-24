@@ -12,8 +12,8 @@ from modules.TargetObjectLocator import FindTargetObject
 
 # --- OPCIONES DE ENTRADA (DESCOMENTA LA QUE NECESITES) ---
 
-# cam = cv2.VideoCapture(0)                                                                                                       # To test webacm use "cv2.VideoCapture(0)" 0 is the default value, change whenever necessary.
-# cam = cv2.VideoCapture('/Users/espiedeguzman/Desktop/Untitled.mp4')                                                              # To test on pre recorded videos replace "0" with the file path and file.
+#cam = cv2.VideoCapture(0)                                                                                                       # To test webacm use "cv2.VideoCapture(0)" 0 is the default value, change whenever necessary.
+#cam = cv2.VideoCapture('/Users/espiedeguzman/Desktop/Untitled.mp4')                                                              # To test on pre recorded videos replace "0" with the file path and file.
 cam = cv2.imread('img/cup.jpg')                                                                                                 # To test on images replace "cv2.VideoCapture(0)" with "cv2.imread('file path and file name')".
 
 # Identificar si es video o imagen para la lógica del bucle
@@ -44,11 +44,11 @@ while True:
         
         # Si es imagen, imprime solo una vez. Si es video, imprime siempre.
         if not is_video and not impreso_una_vez:
-            print(f"\n[INFO] Target: {target} | Distancia: {distancia:.2f} | Valor Midas: {valor_midas}")
+            print(f"\n[INFO] Target: {target} | Distancia: {distancia / 10:.2f} mm | Valor Midas: {valor_midas}")
             impreso_una_vez = True
         elif is_video:
             # En video imprimimos con retorno de carro (\r) para no llenar la consola hacia abajo
-            print(f"[LIVE] Target: {target} | Distancia: {distancia:.2f} | Midas: {valor_midas}      ", end="\r")
+            print(f"[LIVE] Target: {target} | Distancia: {distancia / 10:.2f} mm | Midas: {valor_midas}      ", end="\r")
 
     FindObjects(img_rgb, target_object_depth_val, monocular_depth_val)                                                          # YOLO Object Detection execution for Surrounding Object and Lens Optic Calculation.
 
