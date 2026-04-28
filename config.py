@@ -56,13 +56,13 @@ yolo_model = cv2.dnn.readNetFromDarknet(vehicle_yolo_cfg, vehicle_yolo_weights)
 yolo_model.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
 yolo_model.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
-# 2. Modelo del Objeto Target (COCO - Necesario para detectar 'cup')
-# Nota: Aquí usamos coco_yolo_cfg y coco_yolo_weights
+# 2. Modelo del Objeto Target (COCO)
+# Nota: Aquí se usa coco_yolo_cfg y coco_yolo_weights
 yolo_target_model = cv2.dnn.readNetFromDarknet(coco_yolo_cfg, coco_yolo_weights)
 yolo_target_model.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
 yolo_target_model.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
-# --- OPCIÓN ORIGINAL (COMENTADA PARA MATRÍCULAS) ---
+# --- OPCIÓN PARA MATRÍCULAS ---
 # yolo_target_model = cv2.dnn.readNetFromDarknet(licenseplate_yolo_cfg, licenseplate_yolo_weights)
 # yolo_target_model.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
 # yolo_target_model.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
