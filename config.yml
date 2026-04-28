@@ -1,0 +1,27 @@
+
+#File location of models.
+model_path:
+  coco_names: models\coco.names
+  vehicle_names: models\obj.names
+  licenseplate_names: models\obj-license.names
+
+  coco_yolo_cfg: models\yolov3.cfg
+  coco_yolo_weights: models\yolov3.weights
+
+  vehicle_yolo_cfg: models\yolov4-obj.cfg
+  vehicle_yolo_weights: models\yolov4-obj_10000.weights
+  
+  licenseplate_yolo_cfg: models\yolov4-obj-license.cfg
+  licenseplate_yolo_weights: models\custom_license.weights
+
+  MDE_model_path: models\model-small.onnx
+camera_information:
+  sensor_height_mm: 5.75      # Altura física aproximada del sensor 1/1.67"
+  sensor_height_px: 1080      # Ajusta esto a la resolución real de tu captura
+  focal_length: 5.25          # Focal real típica para este sensor de Honor 
+
+#Target Object information
+target_object:
+  target: cup
+  #target: Vehicle registration plate
+  real_object_height: 90                                                                                            # Target Object physical height in mm
