@@ -1,0 +1,62 @@
+# ==============================================================================
+# config.yml
+# Archivo de configuración central del sistema de detección y estimación de
+# distancia. Centraliza todas las rutas de modelos, parámetros de cámara y
+# datos del objeto target, desacoplando la configuración del código Python.
+#
+# Para cambiar de modo (cup → matrícula, o cámara → otra),
+# solo se edita este archivo sin tocar ningún .py.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# SECCIÓN: model_path
+# Rutas relativas a todos los archivos de modelos de IA utilizados por el sistema.
+# Organizado por tipo de detector: COCO (general), Vehículos (custom), Matrículas.
+# ------------------------------------------------------------------------------
+model_path:
+
+  # --- Archivos de etiquetas (.names) ---
+  coco_names: models\coco.names                      # 80 clases estándar COCO (person, car, cup, etc.)
+  vehicle_names: models\obj.names                    # Clases custom entrenadas para vehículos
+  licenseplate_names: models\obj-license.names       # Clases custom para matrículas (uso alternativo)
+
+  # --- Modelo COCO: YOLOv3 pre-entrenado (detector de objeto target general) ---
+  coco_yolo_cfg: models\yolov3.cfg                   # Arquitectura de red YOLOv3
+  coco_yolo_weights: models\yolov3.weights           # Pesos pre-entrenados en dataset COCO
+
+  # --- Modelo de Vehículos: YOLOv4 custom (detector de entorno circundante) ---
+  vehicle_yolo_cfg: models\yolov4-obj.cfg            # Arquitectura YOLOv4 adaptada a vehículos
+  vehicle_yolo_weights: models\yolov4-obj_10000.weights  # Pesos en checkpoint de iteración 10000
+
+  # --- Modelo de Matrículas: YOLOv4 custom (alternativa al target COCO) ---
+  licenseplate_yolo_cfg: models\yolov4-obj-license.cfg
+  licenseplate_yolo_weights: models\custom_license.weights
+
+  # --- Modelo MiDaS: Estimación de Profundidad Monocular (formato ONNX) ---
+  MDE_model_path: models\model-small.onnx            # Versión small: más rápida, menor precisión
+                                                     # Alternativa: model-large.onnx (más lento, más preciso)
+
+# ------------------------------------------------------------------------------
+# SECCIÓN: camera_information
+# Parámetros físicos y ópticos de la cámara usada para captura.
+# Calibrados para el Honor Magic 7 Lite. Ajustar si se cambia de dispositivo.
+# Estos valores son consumidos por LensOpticCalculator en la fórmula:
+#   distancia = (H_real × f × sensor_px) / (h_px × sensor_mm)
+# ------------------------------------------------------------------------------
+camera_information:
+  sensor_height_mm: 5.75   # Altura física del sensor en mm. Sensor 1/1.67" ≈ 5.75 mm.
+  sensor_height_px: 1080   # Resolución vertical de captura en píxeles.
+  focal_length: 5.25       # Distancia focal del lente en mm.
+                           # Consultar ficha técnica del dispositivo para mayor precisión.
+
+# ------------------------------------------------------------------------------
+# SECCIÓN: target_object
+# Define el objeto de referencia que el sistema usará como ancla de distancia.
+# El target debe existir en el archivo .names del modelo target activo.
+# ------------------------------------------------------------------------------
+target_object:
+  target: cup               # Nombre exacto de la clase en el .names activo.
+                              
+  real_object_height: 90    # Altura física real del objeto target en milímetros.
+                                # Valor crítico: afecta directamente la precisión de
+                                # LensOpticCalculator. Medir el objeto real con calibrador.
