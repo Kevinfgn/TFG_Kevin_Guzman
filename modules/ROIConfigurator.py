@@ -61,8 +61,8 @@ def ROIConfigurator(cam):
     # 40% del ancho  → punto de partida razonable para recorte lateral.
     # 80% del alto   → conserva la mayor parte del frame verticalmente.
     # -------------------------------------------------------------------------
-    initial_widthcrop  = int(width  * 0.4)   # Recorte horizontal inicial (40% del ancho)
-    initial_heightcrop = int(height * 0.8)   # Recorte vertical inicial   (80% del alto)
+    initial_widthcrop  = width    # Recorte horizontal inicial (40% del ancho)
+    initial_heightcrop = height   # Recorte vertical inicial   (80% del alto)
 
     # Crea el trackbar de recorte horizontal.
     # Rango: 0 (sin recorte lateral) a width (recorte total).

@@ -45,11 +45,9 @@ model_path:
 # ------------------------------------------------------------------------------
 camera_information:
   sensor_height_mm: 5.75   # Altura física del sensor en mm. Sensor 1/1.67" ≈ 5.75 mm.
-                            # Consultar ficha técnica del dispositivo para mayor precisión.
   sensor_height_px: 1080   # Resolución vertical de captura en píxeles.
-                            # Debe coincidir con la altura real del frame procesado.
   focal_length: 5.25       # Distancia focal del lente en mm.
-                            # Valor típico para cámara principal del Honor Magic 7 Lite.
+                           # Consultar ficha técnica del dispositivo para mayor precisión.
 
 # ------------------------------------------------------------------------------
 # SECCIÓN: target_object
@@ -57,8 +55,8 @@ camera_information:
 # El target debe existir en el archivo .names del modelo target activo.
 # ------------------------------------------------------------------------------
 target_object:
-  target: cup                   # Nombre exacto de la clase en el .names activo.
+  target: cup               # Nombre exacto de la clase en el .names activo.
                               
-  real_object_height: 90        # Altura física real del objeto target en milímetros.
+  real_object_height: 90    # Altura física real del objeto target en milímetros.
                                 # Valor crítico: afecta directamente la precisión de
                                 # LensOpticCalculator. Medir el objeto real con calibrador.

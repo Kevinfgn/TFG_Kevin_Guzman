@@ -15,7 +15,9 @@
 
 import cv2
 import os
+import time
 import numpy as np
+from collections import deque
 
 from config import target
 from modules.SceneLocator import FindObjects
@@ -29,9 +31,9 @@ from modules.TargetObjectLocator import FindTargetObject
 # Solo una fuente debe estar activa. Comentar/descomentar según el modo deseado.
 # ==============================================================================
 
-# cam = cv2.VideoCapture(0)              # Modo: cámara en vivo (índice 0 = cámara principal)
-# cam = cv2.VideoCapture('vid/demo3.mp4') # Modo: archivo de video
-cam = cv2.imread('img/cuph.jpeg')         # Modo: imagen estática (procesamiento en loop)
+# cam = cv2.VideoCapture(0)               # Modo: cámara en vivo (índice 0 = cámara principal)
+cam = cv2.VideoCapture('vid/cup.mp4') # Modo: archivo de video
+# cam = cv2.imread('img/cup90.jpeg')       # Modo: imagen estática (procesamiento en loop)
 
 # Validación: si la fuente no se pudo cargar, se aborta el programa.
 if cam is None:
@@ -85,12 +87,53 @@ ROIConfigurator(cam)
 
 
 # ==============================================================================
+# SECCIÓN 3.5 — INICIALIZACIÓN DE GRABACIÓN DE VIDEO
+# Solo se inicializa cuando la fuente es video (cámara en vivo o archivo).
+# En modo imagen estática no se crean ni escriben archivos de grabación.
+# ==============================================================================
+if is_video:
+    # Obtiene las dimensiones reales del frame procesado mediante un frame de prueba
+    success_test, frame_test_raw = cam.read()
+    if not success_test:
+        print("Error: No se pudo leer un frame de prueba para inicializar la grabación.")
+        exit()
+    frame_test = optimizar_imagen(frame_test_raw)
+    # Regresa el video al inicio para que el loop principal empiece desde el frame 0
+    cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
+
+    frame_h, frame_w = frame_test.shape[:2]
+
+    # Codec XVID — compatible con .avi en la mayoría de sistemas sin dependencias extra
+    fourcc        = cv2.VideoWriter_fourcc(*'XVID')
+    fps_grabacion = 20  # FPS objetivo para los archivos de video grabados
+
+    # VideoWriter para el feed principal anotado (detecciones + distancias)
+    writer_main  = cv2.VideoWriter('output_deteccion.avi', fourcc, fps_grabacion, (frame_w, frame_h))
+
+    # VideoWriter para el mapa de profundidad MiDaS.
+    # El depthmap es un array float32 de un solo canal [0,1]; se convierte a uint8 BGR
+    # antes de escribir (OpenCV VideoWriter requiere frames BGR uint8).
+    writer_depth = cv2.VideoWriter('output_depthmap.avi',  fourcc, fps_grabacion, (frame_w, frame_h))
+
+    print(f"[REC] Grabando en: output_deteccion.avi | output_depthmap.avi  ({frame_w}x{frame_h} @ {fps_grabacion} fps objetivo)")
+
+# Variables para el cálculo de FPS reales en tiempo de ejecución
+fps_actual = 0.0
+
+# Buffer para suavizado temporal de la distancia del target
+distancia_buffer = deque(maxlen=8)  # Promedia los últimos 8 frames
+
+
+# ==============================================================================
 # SECCIÓN 4 — LOOP PRINCIPAL DE PROCESAMIENTO
 # Cada iteración procesa un frame completo a través del pipeline de IA.
 # En modo imagen, el mismo frame se reprocesa en cada iteración del loop
 # (permite ajustar la ROI interactivamente con los sliders).
 # ==============================================================================
 while True:
+
+    # Marca de tiempo al inicio del frame para calcular FPS reales
+    frame_start = time.time()
 
     # --------------------------------------------------------------------------
     # 4.1 — Adquisición del frame
@@ -149,9 +192,29 @@ while True:
             print(
                 f"[LIVE] Target: {target} | "
                 f"Distancia: {distancia / 10:.2f} cm | "
-                f"Midas: {valor_midas:.3f}    ",
+                f"Midas: {valor_midas:.3f}  \n  ",
                 end="\r"
             )
+
+    # --------------------------------------------------------------------------
+    # 4.5.1 — Dibuja la distancia del target sobre el frame principal
+    # Se dibuja sobre img_rgb para que quede en la grabación y en la ventana.
+    # --------------------------------------------------------------------------
+    if target_object_depth_val is not None:
+        distancia, valor_midas = target_object_depth_val
+
+        # Agrega la distancia actual al buffer y calcula el promedio suavizado
+        distancia_buffer.append(distancia)
+        distancia_suavizada = sum(distancia_buffer) / len(distancia_buffer)
+
+        texto_distancia = f"Target: {target.upper()}"
+        cv2.putText(img_rgb, texto_distancia, (20, 40),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+    else:
+        # Limpia el buffer cuando el target desaparece para evitar valores obsoletos
+        distancia_buffer.clear()
+        cv2.putText(img_rgb, "Target no detectado", (20, 40),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
 
     # --------------------------------------------------------------------------
     # 4.6 — Detección de objetos circundantes (entorno)
@@ -168,8 +231,35 @@ while True:
     # --------------------------------------------------------------------------
     img_final = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
 
-    cv2.imshow('1. Mapa de Calor (Depth Map)', monocular_depth_val) # Mapa de profundidad en escala de grises
-    cv2.imshow('2. Deteccion y Distancia (TFG)', img_final)          # Frame anotado con detecciones y distancias
+    # Redimensiona las ventanas de visualización sin afectar la grabación
+    display_scale  = 0.6
+    img_display    = cv2.resize(img_final,           (int(img_width  * display_scale), int(img_height * display_scale)))
+    depth_display  = cv2.resize(monocular_depth_val, (int(img_width  * display_scale), int(img_height * display_scale)))
+
+    cv2.imshow('1. Mapa de Calor (Depth Map)', depth_display)   # Mapa de profundidad en escala de grises
+    cv2.imshow('2. Deteccion y Distancia (TFG)', img_display)   # Frame anotado con detecciones y distancias
+
+    # --------------------------------------------------------------------------
+    # 4.7.5 — Grabación de ambos feeds en sus respectivos archivos de video
+    # Solo graba cuando la fuente es video; en modo imagen no se escribe nada.
+    # El depthmap (float32, 1 canal, rango [0,1]) se convierte a uint8 BGR antes
+    # de escribirlo para cumplir el formato que VideoWriter espera.
+    # --------------------------------------------------------------------------
+    if is_video:
+        writer_main.write(img_final)   # Frame principal anotado (ya en BGR uint8)
+
+        depth_uint8  = (monocular_depth_val * 255).astype(np.uint8)   # Escala [0,1] → [0,255]
+        depth_bgr    = cv2.cvtColor(depth_uint8, cv2.COLOR_GRAY2BGR)  # 1 canal → 3 canales BGR
+        writer_depth.write(depth_bgr)                                  # Escribe frame del depthmap
+
+    # --------------------------------------------------------------------------
+    # 4.7.6 — Cálculo e impresión de FPS reales en consola
+    # Se mide el tiempo transcurrido desde el inicio del frame hasta este punto,
+    # cubriendo todo el pipeline (inferencia + detección + anotación + grabación).
+    # --------------------------------------------------------------------------
+    frame_end  = time.time()
+    fps_actual = 1.0 / (frame_end - frame_start) if (frame_end - frame_start) > 0 else 0.0
+    print(f"[FPS] {fps_actual:.1f} fps", end="\r")
 
     # --------------------------------------------------------------------------
     # 4.8 — Control de salida
@@ -183,9 +273,13 @@ while True:
 
 # ==============================================================================
 # SECCIÓN 5 — LIMPIEZA DE RECURSOS
-# Libera la cámara (si aplica) y cierra todas las ventanas de OpenCV.
-# Importante para evitar que el proceso quede colgado tras la ejecución.
+# Libera la cámara y los archivos de grabación solo si se usó modo video.
+# En modo imagen solo se cierran las ventanas de visualización.
 # ==============================================================================
 if is_video:
-    cam.release()       # Libera el handle del archivo de video o cámara física
-cv2.destroyAllWindows() # Cierra todas las ventanas de visualización abiertas
+    cam.release()          # Libera el handle del archivo de video o cámara física
+    writer_main.release()  # Finaliza y cierra el archivo output_deteccion.avi
+    writer_depth.release() # Finaliza y cierra el archivo output_depthmap.avi
+    print(f"\n[REC] Grabacion finalizada: output_deteccion.avi | output_depthmap.avi")
+
+cv2.destroyAllWindows()    # Cierra todas las ventanas de visualización abiertas

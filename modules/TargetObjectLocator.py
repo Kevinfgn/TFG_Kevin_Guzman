@@ -134,7 +134,7 @@ def FindTargetObject(img, target, mde_Model):
     # Se busca por class_id numérico, no por nombre, usando el diccionario de
     # indexación construido anteriormente.
     # --------------------------------------------------------------------------
-    target_index = yolo_labels_indexing[target]   # Índice numérico del target en .names
+    target_index = yolo_labels_indexing[target]   # Índice numerico del target en .names
 
     if target_index in class_ids:
         # Localiza todas las detecciones que coinciden con el target y toma la primera.
